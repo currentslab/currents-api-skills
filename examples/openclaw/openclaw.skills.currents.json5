@@ -1,0 +1,34 @@
+{
+  // Example fragment for ~/.openclaw/openclaw.json
+  skills: {
+    entries: {
+      "news-api-currents": {
+        enabled: true,
+
+        // Preferred: SecretRef (provider default env var lookup)
+        apiKey: { source: "env", provider: "default", id: "CURRENTS_API_KEY" },
+
+        // Optional additional env for host-run context
+        env: {
+          CURRENTS_API_KEY: "${CURRENTS_API_KEY}",
+
+          // Learned Currents/WAF compatibility: avoid default Python-urllib fingerprint
+          // Set an explicit User-Agent in your backend client code as well.
+          CURRENTS_HTTP_USER_AGENT: "curl/8.5.0",
+        },
+      },
+    },
+  },
+
+  // If you run sandboxed Docker agents, add env there too.
+  agents: {
+    defaults: {
+      sandbox: {
+        backend: "docker",
+        docker: {
+          env: ["CURRENTS_API_KEY", "CURRENTS_HTTP_USER_AGENT"],
+        },
+      },
+    },
+  },
+}
