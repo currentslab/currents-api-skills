@@ -4,42 +4,129 @@ set -euo pipefail
 # Install Currents API skill variants from this collection.
 #
 # Works both locally and over curl:
-#   bash install.sh hermes
-#   bash install.sh openhands --link
-#   curl -fsSL https://<host>/install.sh | bash -s -- hermes
-#   curl -fsSL https://<host>/install.sh | bash -s -- all
+#   bash install.sh
+#   bash install.sh openclaw
+#   bash install.sh hermes --link
+#   curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- openclaw
 
-TARGET="${1:-}"
+REPO_OWNER="currentslab"
+REPO_NAME="currents-api-skills"
+REPO_REF="master"
+TARGET="hermes"
 MODE="copy"
-if [[ "${2:-}" == "--link" ]]; then
-  MODE="link"
-fi
+REMOTE_TMP=""
+ROOT=""
+
+usage() {
+  cat <<EOF
+Usage: $0 [target] [--link] [--ref <git-ref>]
+
+Targets:
+  hermes      Install to ~/.hermes/skills/research/news-api-currents
+  openclaw    Install to ~/.openclaw/skills/news-api-currents
+  opencode    Install to ~/.config/opencode/skills/news-api-currents
+  goose       Install to ~/.agents/skills/news-api-currents
+  openhands   Install to ~/.openhands/skills/news-api-currents
+  agentskills Install to ~/.agents/skills/news-api-currents
+  all         Install first-class targets (hermes, openclaw, opencode, goose, openhands)
+
+Options:
+  --link      Symlink instead of copying files
+  --ref REF   Install from a different git ref when running via curl|bash
+  -h, --help  Show this help
+
+Examples:
+  bash install.sh
+  bash install.sh openclaw --link
+  curl -fsSL https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_REF}/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_REF}/install.sh | bash -s -- openhands
+EOF
+}
+
+have_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+cleanup() {
+  if [[ -n "$REMOTE_TMP" && -d "$REMOTE_TMP" ]]; then
+    rm -rf "$REMOTE_TMP"
+  fi
+}
+trap cleanup EXIT
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    hermes|openclaw|opencode|goose|openhands|agentskills|all)
+      TARGET="$1"
+      ;;
+    --link)
+      MODE="link"
+      ;;
+    --copy)
+      MODE="copy"
+      ;;
+    --ref)
+      if [[ $# -lt 2 ]]; then
+        echo "Missing value for --ref" >&2
+        usage >&2
+        exit 2
+      fi
+      REPO_REF="$2"
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
+
+fetch_remote_root() {
+  local archive_url
+  archive_url="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/refs/heads/${REPO_REF}.tar.gz"
+  REMOTE_TMP="$(mktemp -d)"
+
+  echo "Fetching ${REPO_OWNER}/${REPO_NAME}@${REPO_REF}..." >&2
+  if have_cmd curl; then
+    curl -fsSL "$archive_url" | tar -xzf - -C "$REMOTE_TMP"
+  elif have_cmd wget; then
+    wget -qO- "$archive_url" | tar -xzf - -C "$REMOTE_TMP"
+  else
+    echo "Need curl or wget for remote install." >&2
+    exit 2
+  fi
+
+  ROOT="$REMOTE_TMP/${REPO_NAME}-${REPO_REF}"
+  if [[ ! -d "$ROOT/targets" ]]; then
+    echo "Downloaded archive is missing targets/: $ROOT" >&2
+    exit 2
+  fi
+}
 
 resolve_root() {
-  if [[ -n "${BASH_SOURCE[0]:-}" ]] && [[ -f "${BASH_SOURCE[0]}" ]]; then
-    cd "$(dirname "${BASH_SOURCE[0]}")" && pwd
-    return 0
+  if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [[ -d "$script_dir/targets" ]]; then
+      ROOT="$script_dir"
+      return 0
+    fi
   fi
 
   if [[ -d "./targets" && -f "./README.md" ]]; then
-    pwd
+    ROOT="$(pwd)"
     return 0
   fi
 
-  cat >&2 <<'EOF'
-Unable to locate repository root automatically.
-
-For curl-piped installs, first clone the repo locally, then run one of:
-  git clone <repo-url>
-  cd currents-api-skills-collections
-  curl -fsSL <raw-install-script-url> | bash -s -- hermes
-
-The piped installer expects to run from inside the cloned repository so it can copy the target folders.
-EOF
-  exit 2
+  fetch_remote_root
 }
-
-ROOT="$(resolve_root)"
 
 install_one() {
   local target="$1"
@@ -83,18 +170,19 @@ install_one() {
   fi
 
   mkdir -p "$(dirname "$dest")"
+  rm -rf "$dest"
 
   if [[ "$MODE" == "link" ]]; then
-    rm -rf "$dest"
     ln -s "$src" "$dest"
     echo "Linked [$target]: $dest -> $src"
   else
-    rm -rf "$dest"
     mkdir -p "$dest"
     cp -R "$src"/. "$dest"/
     echo "Installed [$target]: $src -> $dest"
   fi
 }
+
+resolve_root
 
 case "$TARGET" in
   hermes|openclaw|opencode|goose|openhands|agentskills)
@@ -108,8 +196,8 @@ case "$TARGET" in
     install_one openhands
     ;;
   *)
-    echo "Usage: $0 {hermes|openclaw|opencode|goose|openhands|agentskills|all} [--link]" >&2
-    echo "curl usage: curl -fsSL <install-script-url> | bash -s -- <target> [--link]" >&2
+    echo "Unknown target: $TARGET" >&2
+    usage >&2
     exit 2
     ;;
 esac

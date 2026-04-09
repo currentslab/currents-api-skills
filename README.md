@@ -11,8 +11,6 @@ This repository is for people who want to:
 
 Each folder under `targets/` contains a ready-to-install version of the same skill adapted for a specific agent runtime.
 
-Supported targets:
-
 | Target | Install command | Destination |
 |---|---|---|
 | Hermes Agent | `./install.sh hermes` | `~/.hermes/skills/research/news-api-currents/` |
@@ -24,18 +22,58 @@ Supported targets:
 
 ---
 
-## Quick start
+## One-line install
 
-### 1. Clone the repo
+The installer now supports direct `curl | bash` usage.
+If you do not pass a target, it defaults to **Hermes**.
+
+### Hermes
 
 ```bash
-git clone https://github.com/<your-org>/currents-api-skills-collections.git
-cd currents-api-skills-collections
+curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash
 ```
 
-### 2. Install the skill for your agent
+Equivalent explicit form:
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- hermes
+```
+
+### OpenClaw
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- openclaw
+```
+
+### OpenCode
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- opencode
+```
+
+### Other runtimes
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- goose
+curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- openhands
+curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- agentskills
+```
+
+To symlink instead of copy:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- hermes --link
+```
+
+---
+
+## Clone + install
+
+If you prefer to keep a local checkout:
+
+```bash
+git clone https://github.com/currentslab/currents-api-skills.git
+cd currents-api-skills
 ./install.sh hermes
 ```
 
@@ -52,7 +90,9 @@ To symlink instead of copy:
 ./install.sh hermes --link
 ```
 
-### 3. Set your API key
+---
+
+## Set your API key
 
 ```bash
 export CURRENTS_API_KEY="EXAMPLE_CURRENTS_KEY"
@@ -66,7 +106,12 @@ Hermes example:
 printf 'CURRENTS_API_KEY=EXAMPLE_CURRENTS_KEY\n' >> ~/.hermes/.env
 ```
 
-### 4. Restart your agent and use the skill
+Need a Currents API key?
+- https://currentsapi.services/en/register
+
+---
+
+## Restart your agent and use the skill
 
 Example prompts:
 - "Use `news-api-currents` to design a safe backend proxy for Currents API."
@@ -75,25 +120,10 @@ Example prompts:
 
 ---
 
-## Fastest path for most users
-
-If you only need the shortest possible install flow:
-
-```bash
-git clone https://github.com/<your-org>/currents-api-skills-collections.git
-cd currents-api-skills-collections
-./install.sh hermes
-printf 'CURRENTS_API_KEY=EXAMPLE_CURRENTS_KEY\n' >> ~/.hermes/.env
-```
-
-Then restart Hermes and ask it to use `news-api-currents`.
-
----
-
 ## Repo layout
 
 ```text
-currents-api-skills-collections/
+currents-api-skills/
 ├── README.md
 ├── install.sh
 ├── examples/
@@ -194,15 +224,6 @@ All variants are designed around the same safe usage model:
 - normalize the returned response shape,
 - use UTC-safe date filtering,
 - avoid Cloudflare/WAF issues by sending an explicit browser-like or curl-like `User-Agent`.
-
----
-
-## API key
-
-Need a Currents API key?
-
-Register here:
-- https://currentsapi.services/en/register
 
 ---
 
