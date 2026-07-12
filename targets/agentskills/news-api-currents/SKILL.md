@@ -1,10 +1,7 @@
 ---
 name: news-api-currents
-description: Portable AgentSkills version for securely proxying Currents API through a backend service.
+description: Build a secure backend proxy for Currents News API without exposing the owner key. Use when adding Currents latest-news or search to an end-user product.
 license: MIT
-compatibility: Requires CURRENTS_API_KEY in runtime environment.
-metadata:
-  tags: [currents, proxy, backend, security]
 ---
 
 # Currents Owner Interface (Portable)

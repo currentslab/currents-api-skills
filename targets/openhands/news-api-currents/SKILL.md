@@ -1,10 +1,8 @@
 ---
 name: news-api-currents
-description: OpenHands skill for securely proxying Currents API through a backend service.
+description: Build a secure Currents News API backend in OpenHands without exposing the owner key. Use when adding Currents latest-news or search to an end-user product.
 license: MIT
 compatibility: Requires CURRENTS_API_KEY in the runtime environment.
-metadata:
-  tags: [currents, proxy, backend, security, openhands]
 ---
 
 # Currents Owner Interface (OpenHands)

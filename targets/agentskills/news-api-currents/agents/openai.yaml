@@ -1,0 +1,4 @@
+interface:
+  display_name: "Currents News API"
+  short_description: "Build a secure Currents API backend proxy"
+  default_prompt: "Use $news-api-currents to add a secure Currents News API backend proxy."

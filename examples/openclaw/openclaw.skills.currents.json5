@@ -5,10 +5,7 @@
       "news-api-currents": {
         enabled: true,
 
-        // Preferred: SecretRef (provider default env var lookup)
-        apiKey: { source: "env", provider: "default", id: "CURRENTS_API_KEY" },
-
-        // Optional additional env for host-run context
+        // Host-run context. The referenced variables must exist when config loads.
         env: {
           CURRENTS_API_KEY: "${CURRENTS_API_KEY}",
 
@@ -26,7 +23,10 @@
       sandbox: {
         backend: "docker",
         docker: {
-          env: ["CURRENTS_API_KEY", "CURRENTS_HTTP_USER_AGENT"],
+          env: {
+            CURRENTS_API_KEY: "${CURRENTS_API_KEY}",
+            CURRENTS_HTTP_USER_AGENT: "curl/8.5.0",
+          },
         },
       },
     },

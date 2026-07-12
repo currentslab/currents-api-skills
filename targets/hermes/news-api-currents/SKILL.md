@@ -1,10 +1,6 @@
 ---
 name: news-api-currents
-description: Build and operate a secure user-facing interface for Currents API using a server-side key with auth, quotas, and caching.
-version: 1.0.1
-metadata:
-  hermes:
-    tags: [currents, api, backend, security, proxy]
+description: Build and operate a secure Currents News API backend using a server-side key, validation, quotas, and caching. Use when adding Currents latest-news or search to an end-user product.
 compatibility: Requires internet access and CURRENTS_API_KEY.
 ---
 

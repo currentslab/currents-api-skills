@@ -1,13 +1,7 @@
 ---
 name: news-api-currents
-description: Build a secure user-facing Currents API interface with owner-managed credentials, quotas, caching, and validated proxy routes.
-metadata:
-  openclaw:
-    category: integrations
-    tags: [currents, api, proxy, security, multi-tenant]
-    primaryEnv: CURRENTS_API_KEY
-    requires:
-      env: [CURRENTS_API_KEY]
+description: Build a secure Currents News API backend in OpenClaw with validated proxy routes, quotas, and caching. Use when adding Currents latest-news or search without exposing the owner key.
+compatibility: Requires CURRENTS_API_KEY in the runtime environment.
 ---
 
 # Currents Owner Interface (OpenClaw)
@@ -18,7 +12,7 @@ Use when you are the API owner and want end-users to consume Currents through yo
 ## Core policy
 - Never expose owner key in browser/mobile clients.
 - Currents calls must go backend -> Currents only.
-- Read key from environment (`CURRENTS_API_KEY`) or SecretRef-backed config.
+- Read the key from the environment (`CURRENTS_API_KEY`).
 
 ## Need an API key?
 If you do not have a Currents API key yet, register here:
@@ -51,8 +45,8 @@ Example:
 
 ## OpenClaw-specific credentials wiring
 - Configure skill entry in `openclaw.json` under `skills.entries.news-api-currents`.
-- Prefer SecretRef object for `apiKey` instead of plaintext.
-- `skills.entries.*.env/apiKey` affects host-run context; sandbox env must be configured separately.
+- Reference `CURRENTS_API_KEY` under the skill entry's `env` object; do not place the key value in the skill file.
+- `skills.entries.*.env` affects host-run context; sandbox env must be configured separately.
 
 ## WAF/User-Agent pitfall (learned)
 A default script fingerprint can be blocked by upstream Cloudflare/WAF.
@@ -68,7 +62,7 @@ Mitigation:
 
 ## Verification
 - [ ] No key in frontend bundle/network payloads.
-- [ ] Key loaded from env/SecretRef.
+- [ ] Key loaded from the environment.
 - [ ] Validation/rate limiting enabled.
 - [ ] Cache hit ratio measurable.
 - [ ] 400/401/429/5xx mapped consistently.

@@ -26,13 +26,17 @@ Targets:
   hermes      Install to ~/.hermes/skills/research/news-api-currents
   openclaw    Install to ~/.openclaw/skills/news-api-currents
   opencode    Install to ~/.config/opencode/skills/news-api-currents
-  goose       Install to ~/.agents/skills/news-api-currents
+  vibe        Install to \${VIBE_HOME:-~/.vibe}/skills/news-api-currents (Mistral Vibe)
   openhands   Install to ~/.openhands/skills/news-api-currents
-  agentskills Install to ~/.agents/skills/news-api-currents
-  all         Install first-class targets (hermes, openclaw, opencode, goose, openhands)
+  codex       Install to ~/.agents/skills/news-api-currents (OpenAI Codex)
+  goose       Install to ~/.agents/skills/news-api-currents (Goose)
+  agentskills Install to ~/.agents/skills/news-api-currents (generic AgentSkills)
+              codex, goose, and agentskills share one package and one
+              destination since all three read skills from ~/.agents/skills.
+  all         Install every non-overlapping destination once
 
 Options:
-  --link      Symlink instead of copying files
+  --link      Symlink from a local checkout instead of copying files
   --ref REF   Install from a different git ref when running via curl|bash
   -h, --help  Show this help
 
@@ -57,7 +61,7 @@ trap cleanup EXIT
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    hermes|openclaw|opencode|goose|openhands|agentskills|all)
+    hermes|openclaw|opencode|codex|vibe|goose|openhands|agentskills|all)
       TARGET="$1"
       ;;
     --link)
@@ -90,7 +94,22 @@ done
 
 fetch_remote_root() {
   local archive_url
-  archive_url="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/refs/heads/${REPO_REF}.tar.gz"
+  local encoded_ref=""
+  local char=""
+  local i
+
+  for ((i = 0; i < ${#REPO_REF}; i++)); do
+    char="${REPO_REF:i:1}"
+    case "$char" in
+      [a-zA-Z0-9.~_-]) encoded_ref+="$char" ;;
+      *)
+        printf -v char '%%%02X' "'$char"
+        encoded_ref+="$char"
+        ;;
+    esac
+  done
+
+  archive_url="https://codeload.github.com/${REPO_OWNER}/${REPO_NAME}/tar.gz/${encoded_ref}"
   REMOTE_TMP="$(mktemp -d)"
 
   echo "Fetching ${REPO_OWNER}/${REPO_NAME}@${REPO_REF}..." >&2
@@ -103,11 +122,16 @@ fetch_remote_root() {
     exit 2
   fi
 
-  ROOT="$REMOTE_TMP/${REPO_NAME}-${REPO_REF}"
-  if [[ ! -d "$ROOT/targets" ]]; then
-    echo "Downloaded archive is missing targets/: $ROOT" >&2
-    exit 2
-  fi
+  local candidate
+  for candidate in "$REMOTE_TMP"/*; do
+    if [[ -d "$candidate/targets" && -f "$candidate/install.sh" ]]; then
+      ROOT="$candidate"
+      return 0
+    fi
+  done
+
+  echo "Downloaded archive is missing a valid repository root." >&2
+  exit 2
 }
 
 resolve_root() {
@@ -146,15 +170,20 @@ install_one() {
       src="$ROOT/targets/opencode/news-api-currents"
       dest="$HOME/.config/opencode/skills/news-api-currents"
       ;;
-    goose)
-      src="$ROOT/targets/goose/news-api-currents"
-      dest="$HOME/.agents/skills/news-api-currents"
+    vibe)
+      src="$ROOT/targets/vibe/news-api-currents"
+      dest="${VIBE_HOME:-$HOME/.vibe}/skills/news-api-currents"
       ;;
     openhands)
       src="$ROOT/targets/openhands/news-api-currents"
       dest="$HOME/.openhands/skills/news-api-currents"
       ;;
-    agentskills)
+    codex|goose|agentskills)
+      # Codex, Goose, and generic AgentSkills runtimes all discover user
+      # skills from the same ~/.agents/skills directory, so they must share
+      # one physical package. Installing any of these three names installs
+      # the identical files; picking one after another is a no-op, not a
+      # silent overwrite of different content.
       src="$ROOT/targets/agentskills/news-api-currents"
       dest="$HOME/.agents/skills/news-api-currents"
       ;;
@@ -166,6 +195,11 @@ install_one() {
 
   if [[ ! -d "$src" ]]; then
     echo "Source skill directory not found: $src" >&2
+    return 2
+  fi
+
+  if [[ "$MODE" == "link" && -n "$REMOTE_TMP" ]]; then
+    echo "--link requires a local checkout; streamed installs use --copy." >&2
     return 2
   fi
 
@@ -185,15 +219,17 @@ install_one() {
 resolve_root
 
 case "$TARGET" in
-  hermes|openclaw|opencode|goose|openhands|agentskills)
+  hermes|openclaw|opencode|codex|vibe|goose|openhands|agentskills)
     install_one "$TARGET"
     ;;
   all)
     install_one hermes
     install_one openclaw
     install_one opencode
-    install_one goose
+    install_one vibe
     install_one openhands
+    # Codex and Goose both discover the portable package from ~/.agents/skills.
+    install_one agentskills
     ;;
   *)
     echo "Unknown target: $TARGET" >&2

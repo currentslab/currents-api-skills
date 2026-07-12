@@ -1,69 +1,78 @@
-# Currents API Skills Collection
+# Currents API Skills
 
-Install-ready skill packages for using the **Currents News API** safely inside multiple AI agent runtimes.
+<p align="center">
+  <strong>Bring secure Currents News API workflows to your AI agent—in one command.</strong>
+</p>
 
-This repository is for people who want to:
-- add a reusable `news-api-currents` skill to their agent,
-- keep `CURRENTS_API_KEY` server-side,
-- get a clean starting point for building Currents-powered tools, proxies, and integrations.
+<p align="center">
+  Install-ready skills for OpenAI Codex, Hermes, OpenClaw, OpenCode, Mistral
+  Vibe, Goose, OpenHands, and AgentSkills-compatible runtimes.
+</p>
 
-## What is in this repo?
+<p align="center">
+  <a href="https://currentsapi.services/en/register">Get an API key</a>
+  ·
+  <a href="#one-line-install">Install the skill</a>
+  ·
+  <a href="#restart-your-agent-and-use-the-skill">Try an example prompt</a>
+</p>
 
-Each folder under `targets/` contains a ready-to-install version of the same skill adapted for a specific agent runtime.
+Use `news-api-currents` to help agents build latest-news feeds, search
+endpoints, backend proxies, and Currents-powered integrations without exposing
+`CURRENTS_API_KEY` to browser or mobile clients.
+
+## Why use it?
+
+- **Secure by design:** keep credentials server-side and redact secrets from logs.
+- **Runtime-ready:** install the package tailored to your agent environment.
+- **Production-minded:** validate filters, bound page sizes, cache responses, and enforce rate limits.
+
+> One skill, multiple runtimes. Every package under `targets/` follows the same
+> secure integration model while adapting its guidance to the target agent.
+
+## Supported runtimes
 
 | Target | Install command | Destination |
 |---|---|---|
 | Hermes Agent | `./install.sh hermes` | `~/.hermes/skills/research/news-api-currents/` |
 | OpenClaw | `./install.sh openclaw` | `~/.openclaw/skills/news-api-currents/` |
 | OpenCode | `./install.sh opencode` | `~/.config/opencode/skills/news-api-currents/` |
-| Goose | `./install.sh goose` | `~/.agents/skills/news-api-currents/` |
+| Mistral Vibe | `./install.sh vibe` | `$VIBE_HOME/skills/news-api-currents/` (defaults to `~/.vibe`) |
 | OpenHands | `./install.sh openhands` | `~/.openhands/skills/news-api-currents/` |
-| Generic AgentSkills runtimes | `./install.sh agentskills` | `~/.agents/skills/news-api-currents/` |
+| OpenAI Codex / Goose / Generic AgentSkills | `./install.sh codex` \| `goose` \| `agentskills` | `~/.agents/skills/news-api-currents/` |
+
+> Codex, Goose, and generic AgentSkills all discover the same portable package
+> from `~/.agents/skills`. Use whichever target name matches your runtime;
+> installing more than one is a no-op.
 
 ---
 
 ## One-line install
 
-The installer now supports direct `curl | bash` usage.
-If you do not pass a target, it defaults to **Hermes**.
+For OpenAI Codex:
 
-### Hermes
+```bash
+curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- codex
+```
+
+Replace `codex` with any target from the table above. For example:
+
+```bash
+# Mistral Vibe
+curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- vibe
+
+# OpenHands
+curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- openhands
+```
+
+If no target is supplied, the installer defaults to Hermes:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash
 ```
 
-Equivalent explicit form:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- hermes
-```
-
-### OpenClaw
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- openclaw
-```
-
-### OpenCode
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- opencode
-```
-
-### Other runtimes
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- goose
-curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- openhands
-curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- agentskills
-```
-
-To symlink instead of copy:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/currentslab/currents-api-skills/master/install.sh | bash -s -- hermes --link
-```
+> Streamed installs copy files. To use `--link`, install from a local checkout
+> so the symlink has a persistent source directory.
 
 ---
 
@@ -80,9 +89,16 @@ cd currents-api-skills
 Replace `hermes` with one of:
 - `openclaw`
 - `opencode`
+- `codex`
+- `vibe`
 - `goose`
 - `openhands`
 - `agentskills`
+- `all`
+
+`all` installs each non-overlapping destination once. Since `codex`, `goose`,
+and `agentskills` share one destination, `all` installs that shared package a
+single time instead of three times.
 
 To symlink instead of copy:
 
@@ -104,6 +120,13 @@ Hermes example:
 
 ```bash
 printf 'CURRENTS_API_KEY=EXAMPLE_CURRENTS_KEY\n' >> ~/.hermes/.env
+```
+
+Mistral Vibe example:
+
+```bash
+mkdir -p "${VIBE_HOME:-$HOME/.vibe}"
+printf 'CURRENTS_API_KEY=EXAMPLE_CURRENTS_KEY\n' >> "${VIBE_HOME:-$HOME/.vibe}/.env"
 ```
 
 Need a Currents API key?
@@ -132,10 +155,9 @@ currents-api-skills/
 └── targets/
     ├── agentskills/
     │   └── news-api-currents/
-    │       └── SKILL.md
-    ├── goose/
-    │   └── news-api-currents/
-    │       └── SKILL.md
+    │       ├── SKILL.md
+    │       └── agents/
+    │           └── openai.yaml   # also used by the codex/goose targets
     ├── hermes/
     │   └── news-api-currents/
     │       └── SKILL.md
@@ -143,6 +165,9 @@ currents-api-skills/
     │   └── news-api-currents/
     │       └── SKILL.md
     ├── opencode/
+    │   └── news-api-currents/
+    │       └── SKILL.md
+    ├── vibe/
     │   └── news-api-currents/
     │       └── SKILL.md
     └── openhands/
@@ -177,11 +202,11 @@ mkdir -p ~/.config/opencode/skills
 cp -R targets/opencode/news-api-currents ~/.config/opencode/skills/
 ```
 
-### Goose
+### Mistral Vibe
 
 ```bash
-mkdir -p ~/.agents/skills
-cp -R targets/goose/news-api-currents ~/.agents/skills/
+mkdir -p "${VIBE_HOME:-$HOME/.vibe}/skills"
+cp -R targets/vibe/news-api-currents "${VIBE_HOME:-$HOME/.vibe}/skills/"
 ```
 
 ### OpenHands
@@ -191,7 +216,7 @@ mkdir -p ~/.openhands/skills
 cp -R targets/openhands/news-api-currents ~/.openhands/skills/
 ```
 
-### Generic AgentSkills runtimes
+### OpenAI Codex / Goose / Generic AgentSkills runtimes
 
 ```bash
 mkdir -p ~/.agents/skills
@@ -212,6 +237,19 @@ It shows one way to wire:
 - `CURRENTS_API_KEY`
 - an explicit `CURRENTS_HTTP_USER_AGENT`
 - Docker sandbox env passthrough
+
+---
+
+## Validation
+
+```bash
+./tests/test_install.sh
+./tests/validate_skills.sh
+```
+
+Set `RUN_NETWORK_TESTS=1` when running `test_install.sh` to also verify streamed
+installation from a commit SHA and confirm that streamed `--link` attempts
+preserve an existing installation.
 
 ---
 

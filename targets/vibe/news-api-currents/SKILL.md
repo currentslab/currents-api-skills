@@ -1,11 +1,11 @@
 ---
 name: news-api-currents
-description: Build a secure Currents News API backend in OpenCode without exposing the owner key. Use when adding Currents latest-news or search to an end-user product.
+description: Build a secure Currents News API backend in Mistral Vibe without exposing the owner key. Use when adding Currents latest-news or search to an end-user product.
 license: MIT
 compatibility: Requires CURRENTS_API_KEY in the runtime environment.
 ---
 
-# Currents Owner Interface (OpenCode)
+# Currents Owner Interface (Mistral Vibe)
 
 ## Trigger
 Use when a user wants Currents news in an end-user product without exposing the owner API key.
@@ -17,6 +17,19 @@ Use when a user wants Currents news in an end-user product without exposing the 
 ## Need an API key?
 If you do not have a Currents API key yet, register here:
 - https://currentsapi.services/en/register
+
+## Credential placement (Mistral Vibe)
+Vibe loads `${VIBE_HOME:-$HOME/.vibe}/.env` (dotenv format) on startup and injects its contents
+into the environment — the same mechanism it uses for `MISTRAL_API_KEY`. Add
+the key there:
+
+```bash
+mkdir -p "${VIBE_HOME:-$HOME/.vibe}"
+printf 'CURRENTS_API_KEY=EXAMPLE_CURRENTS_KEY\n' >> "${VIBE_HOME:-$HOME/.vibe}/.env"
+```
+
+The Vibe `.env` file is sensitive: the agent must never read,
+display, or edit it directly. Always tell the user to set the key themselves.
 
 ## Steps
 1. Accept requests in your backend only.
